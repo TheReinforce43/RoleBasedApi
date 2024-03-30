@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import dj_database_url
 import os 
 import environ
 env = environ.Env()
 environ.Env.read_env()
+ENVIRONMENT=env("ENVIRONMENT",default='production')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,9 +29,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if ENVIRONMENT=='development':
+    DEBUG = True
+else:
+    DEBUG=False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS =  ['*']
 
 
 # Application definition
@@ -49,6 +54,7 @@ INSTALLED_APPS = [
     'enrollment',
     'rest_framework',
     'rest_framework.authtoken',
+    
 ]
 
 MIDDLEWARE = [
@@ -140,8 +146,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -159,3 +165,15 @@ REST_FRAMEWORK = {
     #     'rest_framework.permissions.IsAdminUser',
     # ]
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://softmax'
+]
+
+ACCOUNT_USERNAME_BLACKLIST=['admin',]
+
+
+POSTGRES_LOCALLY=True
+
+if ENVIRONMENT=='production' or POSTGRES_LOCALLY==True:
+    DATABASES['default']=dj_database_url.parse(env('DATABASE_URL'))
